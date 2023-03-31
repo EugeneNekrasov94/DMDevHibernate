@@ -1,12 +1,13 @@
 package com.example.converter;
 
 import com.example.entity.BirthDate;
-import jakarta.persistence.AttributeConverter;
 
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 import java.sql.Date;
 import java.util.Optional;
-
-public class BirthDateConverter implements AttributeConverter<BirthDate, java.sql.Date> {
+@Converter(autoApply = true)
+public class BirthDateConverter implements AttributeConverter<BirthDate, Date> {
 
     @Override
     public Date convertToDatabaseColumn(BirthDate birthDate) {
