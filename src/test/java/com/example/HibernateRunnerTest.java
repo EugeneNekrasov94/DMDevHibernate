@@ -1,26 +1,35 @@
 package com.example;
 
-import com.example.entity.BirthDate;
+import com.example.entity.Chat;
+import com.example.entity.PersonalInfo;
 import com.example.entity.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Table;
+import com.example.util.HibernateUtil;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Test;
-
-import javax.swing.text.html.Option;
+import javax.persistence.Column;
+import javax.persistence.Table;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class HibernateRunnerTest {
+
+    @Test
+    void testManyToMany() {
+        try (var sessionFactory = HibernateUtil.buildSessionFactory();
+             var session = sessionFactory.openSession()){
+            session.beginTransaction();
+            var user = session.get(User.class,1L);
+            var chat = Chat.builder().name("kata").build();
+            user.addChat(chat);
+            session.save(chat);
+            session.getTransaction().commit();
+        }
+    }
     @Test
     void testReflection() throws SQLException, IllegalAccessException {
         String sql = """
@@ -31,11 +40,10 @@ class HibernateRunnerTest {
                 values
                 (%s)
                 """;
+        PersonalInfo personalInfo = PersonalInfo.builder().firstname("Vanya").lastname("Shatalov").build();
         User user = User.builder()
                 .username("ivanov@mail.ru")
-                .firstname("ivan")
-                .lastname("ivanov")
-                .birthDate(new BirthDate(LocalDate.of(2000,1,1)))
+                .personalInfo(personalInfo)
                 .build();
         String tableName = Optional.ofNullable(user.getClass().getAnnotation(Table.class)).map(table -> table.schema() + table.name())
                 .orElse(user.getClass().getName());
